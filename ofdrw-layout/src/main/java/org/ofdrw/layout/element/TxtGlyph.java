@@ -1,5 +1,7 @@
 package org.ofdrw.layout.element;
 
+import org.ofdrw.font.Font;
+
 /**
  * 文字字符块
  *
@@ -22,16 +24,12 @@ public class TxtGlyph {
     }
 
     /**
-     * @return 字符宽度
+     * @return 字符宽度(字符宽度 + 字间距)
      */
     public double getW() {
+        Font font = parent.getFont();
         double w = parent.getLetterSpacing();
-        if ((txt > 'A' && txt < 'Z') || (txt > 'a' && txt < 'z')) {
-            w += parent.getFontSize() / 2 + 1;
-        } else {
-            // 非英文字符
-            w += parent.getFontSize();
-        }
+        w += parent.getFontSize() * font.getCharWidthScale(txt);
         return w;
     }
 

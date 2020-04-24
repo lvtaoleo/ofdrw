@@ -16,29 +16,28 @@ import java.nio.file.Path;
  * @author 权观宇
  * @since 2020-02-03 03:34:31
  */
-public class Img extends Div{
+public class Img extends Div {
     /**
      * 图片文件路径
      */
     private Path src;
 
-    /**
-     * 是否保持比例缩放
-     * <p>
-     * true - 保持比例缩放
-     * false - 拉伸适应width和height
-     */
-    private boolean fit;
+//    /**
+//     * 是否保持比例缩放
+//     * <p>
+//     * true - 保持比例缩放
+//     * false - 拉伸适应width和height
+//     */
+//    private boolean fit;
 
     private Img() {
-        this.fit = true;
+//        this.fit = true;
         // 图片对象不可拆分
         this.setIntegrity(true);
     }
 
     public Img(double width, double height, Path src) throws IOException {
         this(src);
-        this.src = src;
         this.setWidth(width)
                 .setHeight(height);
     }
@@ -55,27 +54,33 @@ public class Img extends Div{
     private void parseImg() throws IOException {
         File picture = src.toFile();
         BufferedImage sourceImg = ImageIO.read(new FileInputStream(picture));
-        this.setWidth((double) sourceImg.getWidth());
-        this.setHeight((double) sourceImg.getHeight());
+        this.setWidth((double) sourceImg.getWidth() / 5);
+        this.setHeight((double) sourceImg.getHeight() / 5);
     }
 
     public Path getSrc() {
         return src;
     }
 
-    public boolean isFit() {
-        return fit;
-    }
-
-    public Img setFit(boolean fit) {
-        this.fit = fit;
-        return this;
-    }
+//    public boolean isFit() {
+//        return fit;
+//    }
+//
+//    public Img setFit(boolean fit) {
+//        this.fit = fit;
+//        return this;
+//    }
 
     public Img setSrc(Path src) {
         this.src = src;
         return this;
     }
 
-
+    /**
+     * 不允许切分
+     */
+    @Override
+    public Div[] split(double sHeight) {
+        throw new RuntimeException("图片对象不支持分割操作");
+    }
 }

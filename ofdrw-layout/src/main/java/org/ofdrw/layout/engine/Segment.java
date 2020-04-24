@@ -4,7 +4,7 @@ import org.ofdrw.layout.Rectangle;
 import org.ofdrw.layout.element.AFloat;
 import org.ofdrw.layout.element.Clear;
 import org.ofdrw.layout.element.Div;
-import org.ofdrw.layout.element.Position;
+import org.ofdrw.layout.element.PageAreaFiller;
 
 import java.util.*;
 
@@ -44,6 +44,13 @@ public class Segment implements Iterable<Map.Entry<Div, Rectangle>>, Iterator<Ma
      */
     private boolean blockable = false;
 
+    /**
+     * 剩余页面空间填充段
+     * <p>
+     * true - 填充剩余页面空间； false - 非填充段
+     */
+    private boolean isRemainAreaFiller = false;
+
 
     public Segment(double width) {
         this.width = width;
@@ -77,7 +84,7 @@ public class Segment implements Iterable<Map.Entry<Div, Rectangle>>, Iterator<Ma
         }
         AFloat aFloat = div.getFloat();
         // 根据段宽度重置加入元素尺寸
-        Rectangle blockSize = div.reSize(this.width);
+        Rectangle blockSize = div.doPrepare(this.width);
         if (blockSize.getWidth() > this.remainWidth) {
             // 段剩余宽度不足无法放入元素，舍弃
             return false;
@@ -90,6 +97,10 @@ public class Segment implements Iterable<Map.Entry<Div, Rectangle>>, Iterator<Ma
         2. 浮动 + Clear 对立
          */
         if (div.isBlockElement()) {
+            if (!isEmpty()) {
+                // 独占类型如果已经存在元素那么则无法加入
+                return false;
+            }
             this.remainWidth = 0;
             add(div, blockSize);
             return true;
@@ -98,6 +109,24 @@ public class Segment implements Iterable<Map.Entry<Div, Rectangle>>, Iterator<Ma
         if (aFloat == AFloat.center && !isCenterFloat()) {
             return false;
         }
+        // 排除特殊占有情况
+        Clear clear = div.getClear();
+        if (clear == Clear.left || clear == Clear.right) {
+            for (Div inner : content) {
+                if (clear == Clear.left) {
+                    // clear left 但是left 有元素
+                    if (inner.getFloat() == AFloat.left) {
+                        return false;
+                    }
+                } else {
+                    // clear right 但是right 有元素
+                    if (inner.getFloat() == AFloat.right) {
+                        return false;
+                    }
+                }
+            }
+        }
+
         this.remainWidth -= blockSize.getWidth();
         add(div, blockSize);
         return true;
@@ -113,9 +142,12 @@ public class Segment implements Iterable<Map.Entry<Div, Rectangle>>, Iterator<Ma
         if (height < blockSize.getHeight()) {
             this.height = blockSize.getHeight();
         }
-        if (div.getIntegrity() == false) {
+        if (div.isIntegrity() == false) {
             // 判断是否可以拆分段，只要出现了一个可拆分的，那么该段就是可以拆分
             this.blockable = true;
+        }
+        if (div instanceof PageAreaFiller) {
+            this.isRemainAreaFiller = true;
         }
         this.content.add(div);
         this.sizeList.add(blockSize);
@@ -156,6 +188,15 @@ public class Segment implements Iterable<Map.Entry<Div, Rectangle>>, Iterator<Ma
      */
     public boolean isEmpty() {
         return this.content.isEmpty();
+    }
+
+    /**
+     * 是否是剩余填充空间
+     *
+     * @return true - 填充； false - 非填充
+     */
+    public boolean isRemainAreaFiller() {
+        return isRemainAreaFiller;
     }
 
     /**

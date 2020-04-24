@@ -109,10 +109,11 @@ public class OFDElement extends DefaultElementProxy {
      * @param name OFD元素名称
      * @return OFD元素或null
      */
-    public OFDElement getOFDElement(String name) {
-        Element e = this.element(new QName(name, Const.OFD_NAMESPACE));
-        return e == null ? null : new OFDElement(e);
+    public Element getOFDElement(String name) {
+        return this.element(new QName(name, Const.OFD_NAMESPACE));
     }
+
+
 
     /**
      * 代理对象创建
@@ -123,7 +124,7 @@ public class OFDElement extends DefaultElementProxy {
      * @return 代理对象
      */
     public <R extends OFDElement> R getOFDElement(String name, Function<? super Element, ? extends R> mapper) {
-        OFDElement e = this.getOFDElement(name);
+        Element e = this.getOFDElement(name);
         if (e == null) {
             return null;
         }
@@ -157,8 +158,12 @@ public class OFDElement extends DefaultElementProxy {
 
     /**
      * 获取 指定名称OFD元素集合
+     * <p>
+     * 集合将会保持原有次序
      *
-     * @param name OFD元素名称
+     * @param name   OFD元素名称
+     * @param mapper 转换对象构造器引用
+     * @param <R>    指定元素对象
      * @return 指定名称OFD元素集合
      */
     public <R> List<R> getOFDElements(String name, Function<? super Element, ? extends R> mapper) {

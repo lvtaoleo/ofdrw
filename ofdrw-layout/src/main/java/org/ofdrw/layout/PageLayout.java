@@ -1,6 +1,9 @@
 package org.ofdrw.layout;
 
+import org.ofdrw.core.basicStructure.doc.CT_PageArea;
 import org.ofdrw.layout.element.ArrayParamTool;
+
+import java.util.Arrays;
 
 /**
  * 虚拟页面样式
@@ -9,6 +12,51 @@ import org.ofdrw.layout.element.ArrayParamTool;
  * @since 2020-02-28 03:25:54
  */
 public class PageLayout {
+
+    public static PageLayout A0() {
+        return new PageLayout(841d, 1189d);
+    }
+
+    public static PageLayout A1() {
+        return new PageLayout(594d, 841d);
+    }
+
+    public static PageLayout A2() {
+        return new PageLayout(420d, 594d);
+    }
+
+    public static PageLayout A3() {
+        return new PageLayout(297d, 420d);
+    }
+
+    public static PageLayout A4() {
+        return new PageLayout(210d, 297d);
+    }
+
+    public static PageLayout A5() {
+        return new PageLayout(148d, 210d);
+    }
+
+    public static PageLayout A6() {
+        return new PageLayout(105d, 148d);
+    }
+
+    public static PageLayout A7() {
+        return new PageLayout(74d, 105d);
+    }
+
+    public static PageLayout A8() {
+        return new PageLayout(52d, 74d);
+    }
+
+    public static PageLayout A9() {
+        return new PageLayout(37d, 52d);
+    }
+
+    public static PageLayout A10() {
+        return new PageLayout(26d, 37d);
+    }
+
     /**
      * 页面宽度
      */
@@ -21,11 +69,14 @@ public class PageLayout {
     /**
      * 外边距
      * <p>
-     *  上 左 下 右
+     * 页边距：上下都是2.54厘米，左右都是3.17厘米。
+     *
+     * <p>
+     * 上 左 下 右
      * [0  1  2  3]
      * 默认值 36
      */
-    private Double[] margin = {36d, 36d, 36d, 36d};
+    private Double[] margin = {25.4, 31.7, 25.4, 31.7};
 
     public PageLayout(Double width, Double height) {
         this.width = width;
@@ -54,23 +105,78 @@ public class PageLayout {
         return margin;
     }
 
-    public PageLayout setMargin(Double[] margin) {
+    public PageLayout setMargin(Double... margin) {
         this.margin = ArrayParamTool.arr4p(margin);
         return this;
+    }
+
+    public PageLayout setMarginTop(double top) {
+        margin[0] = top;
+        return this;
+    }
+
+    public double getMarginTop() {
+        return margin[0];
+    }
+
+    public PageLayout setMarginRight(double right) {
+        margin[1] = right;
+        return this;
+    }
+
+    public double getMarginRight() {
+        return margin[1];
+    }
+
+    public PageLayout setMarginBottom(double bottom) {
+        margin[2] = bottom;
+        return this;
+    }
+
+    public double getMarginBottom() {
+        return margin[2];
+    }
+
+
+    public PageLayout setMarginLeft(double left) {
+        margin[3] = left;
+        return this;
+    }
+
+    public double getMarginLeft() {
+        return margin[3];
     }
 
     /**
      * @return 实际能放置内容的宽度
      */
     public double contentWidth() {
-        return width - margin[1] - margin[3];
+        return width - getMarginLeft() - getMarginRight();
     }
 
     /**
      * @return 实际能放置内容的高度
      */
     public double contentHeight() {
-        return height - margin[0] - margin[2];
+        return height - getMarginTop() - getMarginBottom();
+    }
+
+    /**
+     * 绘制区域原点X
+     *
+     * @return 起始X坐标
+     */
+    public double getStartX() {
+        return getMarginLeft();
+    }
+
+    /**
+     * 绘制区域原点Y
+     *
+     * @return 起始Y坐标
+     */
+    public double getStartY() {
+        return getMarginTop();
     }
 
     /**
@@ -80,9 +186,39 @@ public class PageLayout {
      */
     public Rectangle getWorkerArea() {
         return new Rectangle(
-                margin[1],
-                margin[0],
-                width - margin[1] - margin[3],
-                height - margin[0] - margin[2]);
+                getStartX(),
+                getStartY(),
+                contentWidth(),
+                contentHeight());
+    }
+
+    /**
+     * 获取OFD页面区域
+     *
+     * @return OFD页面区域
+     */
+    public CT_PageArea getPageArea() {
+        return new CT_PageArea()
+                // 物理区域为实际页面大小
+                .setPhysicalBox(0, 0, this.getWidth(), this.getHeight())
+                // 为了兼容骑缝章，不减去页面边距
+                .setApplicationBox(getStartX(),
+                        getStartY(),
+                        this.getWidth(),
+                        this.getHeight());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof PageLayout) {
+            PageLayout that = (PageLayout) obj;
+            return (Arrays.equals(this.margin, that.margin)
+                    && this.width.equals(that.width)
+                    && this.height.equals(that.height));
+        }
+        return false;
     }
 }
